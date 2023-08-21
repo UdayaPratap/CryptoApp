@@ -1,6 +1,6 @@
 import streamlit as st
 import joblib
-
+import sklearn 
 # Load the saved regression model
 regression_model = joblib.load('BTC-USD_regression_model.joblib')
 
