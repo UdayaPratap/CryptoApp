@@ -1,46 +1,41 @@
 import streamlit as st
-import joblib
-import sklearn 
-# Load the saved regression model
-regression_model = joblib.load('BTC-USD_regression_model.joblib')
+import pandas as pd
+import requests
+import time
 
-st.title('Cryptocurrency Price Prediction')
+# Define the trading strategy
+def buy_btc():
+  """Buys BTC if the price is above the moving average."""
+  price = get_btc_price()
+  moving_average = get_moving_average()
+  if price > moving_average:
+    st.write("Buying BTC!")
 
-# User input form
-st.header('Enter Cryptocurrency Data')
-open_price = st.number_input('Opening Price', min_value=0.0)
-high_price = st.number_input('High Price', min_value=0.0)
-low_price = st.number_input('Low Price', min_value=0.0)
-volume = st.number_input('Volume', min_value=0.0)
-year = st.number_input('Year', min_value=2000, max_value=9999)
-month = st.number_input('Month', min_value=1, max_value=12)
-day = st.number_input('Day', min_value=1, max_value=31)
+def sell_btc():
+  """Sells BTC if the price is below the moving average."""
+  price = get_btc_price()
+  moving_average = get_moving_average()
+  if price < moving_average:
+    st.write("Selling BTC!")
 
-# Predict button
-if st.button('Predict'):
-    user_data = {
-        'Open': open_price,
-        'High': high_price,
-        'Low': low_price,
-        'Volume': volume,
-        'Year': year,
-        'Month': month,
-        'Day': day
-    }
+# Get the current BTC price
+def get_btc_price():
+  response = requests.get("https://api.coinbase.com/v2/prices/BTC-USD/spot")
+  data = response.json()
+  return data["amount"]
 
-    # Predict using the regression model
-    predicted_close = regression_model.predict([[user_data['Open'], user_data['High'], user_data['Low'],
-                                                 user_data['Volume'], user_data['Year'], user_data['Month'],
-                                                 user_data['Day']]])
+# Get the moving average
+def get_moving_average():
+  data = pd.read_csv("btc_price_data.csv")
+  moving_average = data["Close"].rolling(window=10).mean()
+  return moving_average[-1]
 
-    st.success(f'Predicted Closing Price: {predicted_close[0]:.2f}')
+# Create the Streamlit app
+st.title("BTC Trading Bot")
 
-    # Trading strategy
-    threshold = 0.02  # Adjust this threshold as needed
-    current_price = predicted_close[0]  # Use the predicted closing price
-    if current_price > open_price * (1 + threshold):
-        st.info('Signal: Buy')
-    elif current_price < open_price * (1 - threshold):
-        st.info('Signal: Sell')
-    else:
-        st.info('Signal: Hold')
+# Run the trading strategy
+if st.button("Buy BTC"):
+  buy_btc()
+
+if st.button("Sell BTC"):
+  sell_btc()
