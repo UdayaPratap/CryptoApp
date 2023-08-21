@@ -1,5 +1,6 @@
 import streamlit as st
 import joblib
+import pandas as pd
 
 # Load the saved regression model
 regression_model = joblib.load('BTC-USD_regression_model.joblib')
@@ -12,9 +13,13 @@ open_price = st.number_input('Opening Price', min_value=0.0)
 high_price = st.number_input('High Price', min_value=0.0)
 low_price = st.number_input('Low Price', min_value=0.0)
 volume = st.number_input('Volume', min_value=0.0)
-year = st.number_input('Year', min_value=2000, max_value=9999)
-month = st.number_input('Month', min_value=1, max_value=12)
-day = st.number_input('Day', min_value=1, max_value=31)
+current_date = pd.Timestamp.today()
+year = current_date.year
+month = current_date.month
+day = current_date.day
+
+# Display current date
+st.write(f"Current Date: {year}-{month}-{day}")
 
 # Predict button
 if st.button('Predict'):
