@@ -1,51 +1,75 @@
 import streamlit as st
-import joblib
 import pandas as pd
+import yfinance as yf
+import requests
+import joblib
+from io import BytesIO
 
-# Load the saved regression model
-regression_model = joblib.load('BTC-USD_regression_model.joblib')
+st.title('Trading Bot')
 
-st.title('Cryptocurrency Price Prediction')
+model_url = 'https://drive.google.com/uc?id=1zHBodohwciZEfrckOEZhAviUkVPzpzx-'
+response = requests.get(model_url)
+model_file = BytesIO(response.content)
+regression_model = joblib.load(model_file)
 
-# User input form
-st.header('Enter Cryptocurrency Data')
-open_price = st.number_input('Opening Price', min_value=0.0)
-high_price = st.number_input('High Price', min_value=0.0)
-low_price = st.number_input('Low Price', min_value=0.0)
-volume = st.number_input('Volume', min_value=0.0)
-current_date = pd.Timestamp.today()
-year = current_date.year
-month = current_date.month
-day = current_date.day
+ticker = 'BTC-USD'
 
-# Display current date
-st.write(f"Current Date: {year}-{month}-{day}")
+# Get today's date for year, month, and day
+today = pd.Timestamp.today()
+year, month, day = today.year, today.month, today.day
 
-# Predict button
-if st.button('Predict'):
-    user_data = {
-        'Open': open_price,
-        'High': high_price,
-        'Low': low_price,
-        'Volume': volume,
-        'Year': year,
-        'Month': month,
-        'Day': day
-    }
+# Get user inputs for opening, high, low, and adjusted closing prices
+opening_price = st.number_input('Enter the opening price')
+high_price = st.number_input('Enter the high price')
+low_price = st.number_input('Enter the low price')
+adj_closing_price = st.number_input('Enter the adjusted closing price')
+vol = st.number_input('Enter volume')
 
-    # Predict using the regression model
+user_data = {
+    'Open': opening_price,
+    'High': high_price,
+    'Low': low_price,
+    'Volume': vol,
+    'Adj Close': adj_closing_price,
+    'Year': year,
+    'Month': month,
+    'Day': day
+}
+
+
+def predict_price():
     predicted_close = regression_model.predict([[user_data['Open'], user_data['High'], user_data['Low'],
                                                  user_data['Volume'], user_data['Year'], user_data['Month'],
                                                  user_data['Day']]])
+    return predicted_close
 
-    st.success(f'Predicted Closing Price: {predicted_close[0]:.2f}')
 
-    # Trading strategy
+# Define trading strategy
+def trading_strategy(predicted_price, current_price):
     threshold = 0.02  # Adjust this threshold as needed
-    current_price = predicted_close[0]  # Use the predicted closing price
-    if current_price > open_price * (1 + threshold):
-        st.info('Signal: Buy')
-    elif current_price < open_price * (1 - threshold):
-        st.info('Signal: Sell')
+    if predicted_price > current_price * (1 + threshold):
+        return 'buy'
+    elif predicted_price < current_price * (1 - threshold):
+        return 'sell'
     else:
-        st.info('Signal: Hold')
+        return 'hold'
+
+
+# Main function to execute the trading bot
+def main():
+    current_price = user_data['Adj Close']  # Use the user-input adjusted closing price
+
+    predicted_closing_price = predict_price()
+
+    # Apply trading strategy
+    decision = trading_strategy(predicted_closing_price, current_price)
+
+    # Execute trading decision
+    if decision == 'buy':
+        st.write('Signal: BUY', ticker)
+    elif decision == 'sell':
+        st.write('Signal: SELL', ticker)
+
+
+if __name__ == '__main__':
+    main()
