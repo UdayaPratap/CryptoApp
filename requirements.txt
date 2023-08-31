@@ -1,4 +1,5 @@
-streamlit
-joblib 
-sklearn
-pandas
+streamlit==1.3.0
+pandas==1.4.0
+yfinance==0.1.64
+requests==2.26.0
+joblib==1.1.0
