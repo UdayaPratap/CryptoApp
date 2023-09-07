@@ -69,13 +69,33 @@ if selected_currency:
     def main():
         current_price = user_data['Adj Close']  # Use the user-input adjusted closing price
 
+        # Display fetched information
+        st.subheader(f'Information for {currency_names[selected_currency]} ({selected_currency}):')
+        st.write(f'Opening Price: {opening_price}')
+        st.write(f'High Price: {high_price}')
+        st.write(f'Low Price: {low_price}')
+        st.write(f'Adjusted Closing Price: {adj_closing_price}')
+        st.write(f'Volume: {vol}')
+
         predicted_closing_price = predict_price()
 
         # Apply trading strategy
         decision = trading_strategy(predicted_closing_price, current_price)
 
-        # Execute trading decision
-        st.write(f'Signal for {currency_names[selected_currency]} ({selected_currency}): {decision}')
+        # Display trading decision and reasoning
+        st.subheader(f'Trading Decision for {currency_names[selected_currency]} ({selected_currency}):')
+        st.write(f'Current Price: {current_price}')
+        st.write(f'Predicted Closing Price: {predicted_closing_price}')
+
+        if decision == 'buy':
+            st.write('Signal: BUY')
+            st.write('Reason: Predicted price is higher than current price by more than 2%.')
+        elif decision == 'sell':
+            st.write('Signal: SELL')
+            st.write('Reason: Predicted price is lower than current price by more than 2%.')
+        else:
+            st.write('Signal: HOLD')
+            st.write('Reason: Predicted price is within 2% of the current price.')
 
     if __name__ == '__main__':
         main()
