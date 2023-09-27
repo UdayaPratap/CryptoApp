@@ -29,7 +29,7 @@ if selected_currency:
 
     # Fetch the selected currency's data
     currency_data = yf.Ticker(selected_currency)
-    currency_info = currency_data.history(period="5d")
+    currency_info = currency_data.history(period="1d")
 
     # Extract relevant data
     opening_price = currency_info['Open'][0]
