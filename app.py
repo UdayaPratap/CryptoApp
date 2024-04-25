@@ -153,7 +153,7 @@ def main():
                 st.write(f"Trading Decision for {ticker}:", decision)
 
 # Execute the Streamlit app
-if _name_ == '_main_':
+if __name__ == '__main__':
     main()
 
 # Chatbot integration as a sidebar
