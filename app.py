@@ -157,7 +157,7 @@ if __name__ == '__main__':
     main()
 
 # Chatbot integration as a sidebar
-st.sidebar.title("Simple Chat")
+st.sidebar.title("Phi Chat")
 
 # Initialize chat history
 if "messages" not in st.session_state:
